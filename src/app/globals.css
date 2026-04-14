@@ -1,0 +1,84 @@
+@import "tailwindcss";
+
+:root {
+  /* Industrial Precision - Core Colors */
+  --color-primary: #a23a00;
+  --color-primary-container: #ca4b00;
+  --color-on-primary: #ffffff;
+  
+  --color-secondary: #45655a;
+  --color-secondary-container: #e6eee9;
+  --color-on-secondary-container: #1e3029;
+  
+  /* Industrial Greys - Surfaces */
+  --color-surface: #f9f9f9;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #f4f3f3;
+  --color-surface-container: #ececec;
+  --color-surface-container-high: #e2e2e2;
+  --color-surface-container-highest: #d5d5d5;
+  
+  --color-surface-bright: rgba(255, 255, 255, 0.8);
+  
+  /* Text & Borders */
+  --color-on-surface: #1a1c1c;
+  --color-on-surface-variant: #5b6260;
+  --color-outline: #757c7a;
+  --color-outline-variant: #c3cac7;
+}
+
+@theme inline {
+  --color-primary: var(--color-primary);
+  --color-primary-container: var(--color-primary-container);
+  --color-on-primary: var(--color-on-primary);
+  
+  --color-secondary: var(--color-secondary);
+  --color-secondary-container: var(--color-secondary-container);
+  --color-on-secondary-container: var(--color-on-secondary-container);
+  
+  --color-surface: var(--color-surface);
+  --color-surface-container-lowest: var(--color-surface-container-lowest);
+  --color-surface-container-low: var(--color-surface-container-low);
+  --color-surface-container: var(--color-surface-container);
+  --color-surface-container-high: var(--color-surface-container-high);
+  --color-surface-container-highest: var(--color-surface-container-highest);
+  --color-surface-bright: var(--color-surface-bright);
+  
+  --color-on-surface: var(--color-on-surface);
+  --color-on-surface-variant: var(--color-on-surface-variant);
+  --color-outline: var(--color-outline);
+  --color-outline-variant: var(--color-outline-variant);
+
+  --font-manrope: var(--font-manrope), system-ui, sans-serif;
+  --font-inter: var(--font-inter), system-ui, sans-serif;
+  
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 12px;
+  
+  /* Ambient shadow for cards */
+  --shadow-ambient: 0 4px 30px rgba(26, 28, 28, 0.05);
+}
+
+body {
+  background-color: var(--color-surface);
+  color: var(--color-on-surface);
+  font-family: var(--font-inter);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Custom Scrollbar for POS */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-surface-container-high);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-outline);
+}
