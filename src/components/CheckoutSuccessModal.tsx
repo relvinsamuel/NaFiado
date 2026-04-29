@@ -2,6 +2,7 @@
 
 import { usePosStore } from '@/lib/store';
 import { CheckCircle2, X, Printer, RotateCcw } from 'lucide-react';
+import { formatBs, formatUsd } from '@/lib/currency';
 
 export default function CheckoutSuccessModal() {
   const { showSuccessModal, lastVenta, closeSuccessModal } = usePosStore();
@@ -14,6 +15,7 @@ export default function CheckoutSuccessModal() {
     'pago_movil': '📱 Pago Móvil',
     'zelle': '💳 Zelle',
     'punto': '💳 Punto de Venta',
+    'fiado': '📋 Fiado (Crédito)',
   };
 
   const fechaFormateada = new Date(lastVenta.created_at).toLocaleString('es-VE', {
@@ -61,11 +63,18 @@ export default function CheckoutSuccessModal() {
             <span className="text-sm text-on-surface-variant">Fecha</span>
             <span className="text-sm font-medium text-on-surface">{fechaFormateada}</span>
           </div>
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-on-surface-variant">Tasa BCV</span>
+            <span className="text-sm font-medium text-on-surface">1 USD = {Number(lastVenta.tasa_bcv).toFixed(2)} Bs</span>
+          </div>
           
           {/* Total destacado */}
           <div className="bg-surface-container-low rounded-lg p-4 flex justify-between items-center mt-2">
             <span className="font-manrope font-bold text-lg text-on-surface">Total Cobrado</span>
-            <span className="font-manrope font-extrabold text-2xl text-primary">${Number(lastVenta.total).toFixed(2)}</span>
+            <div className="text-right">
+              <span className="font-manrope font-extrabold text-2xl text-primary block">{formatBs(Number(lastVenta.total_bs))}</span>
+              <span className="text-sm text-on-surface-variant">{formatUsd(Number(lastVenta.total))}</span>
+            </div>
           </div>
         </div>
 

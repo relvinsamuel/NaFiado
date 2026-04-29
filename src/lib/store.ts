@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { supabase } from './supabase';
+import { useCurrencyStore } from './currencyStore';
 
 export interface Product {
   codigo: string;
@@ -17,6 +18,18 @@ export interface CartItem extends Product {
 export interface VentaResult {
   id: string;
   total: number;
+  total_bs: number;
+  tasa_bcv: number;
+  metodo_pago: string;
+  items_count: number;
+  created_at: string;
+}
+
+interface CheckoutRpcResult {
+  id: string;
+  total: number;
+  total_bs: number;
+  tasa_bcv: number;
   metodo_pago: string;
   items_count: number;
   created_at: string;
@@ -38,7 +51,7 @@ interface PosStore {
   cartTotal: () => number;
   fetchInventory: () => Promise<void>;
   fetchWorkspaceId: () => Promise<string | null>;
-  processCheckout: (metodoPago: string, clienteNombre?: string) => Promise<boolean>;
+  processCheckout: (metodoPago: string, clienteId: string, clienteNombre: string) => Promise<boolean>;
   closeSuccessModal: () => void;
 }
 
@@ -53,8 +66,12 @@ export const usePosStore = create<PosStore>((set, get) => ({
 
   addToCart: (product) =>
     set((state) => {
+      const available = product.stock ?? 0;
+      if (available <= 0) return state;
+
       const existing = state.cart.find((item) => item.codigo === product.codigo);
       if (existing) {
+        if (existing.quantity >= available) return state;
         return {
           cart: state.cart.map((item) =>
             item.codigo === product.codigo ? { ...item, quantity: item.quantity + 1 } : item
@@ -72,7 +89,9 @@ export const usePosStore = create<PosStore>((set, get) => ({
   updateQuantity: (codigo, quantity) =>
     set((state) => ({
       cart: state.cart.map((item) =>
-        item.codigo === codigo ? { ...item, quantity: Math.max(1, quantity) } : item
+        item.codigo === codigo
+          ? { ...item, quantity: Math.max(1, Math.min(quantity, item.stock ?? quantity)) }
+          : item
       ),
     })),
 
@@ -137,7 +156,7 @@ export const usePosStore = create<PosStore>((set, get) => ({
     set({ inventory: data || [], isLoading: false });
   },
 
-  processCheckout: async (metodoPago, clienteNombre) => {
+  processCheckout: async (metodoPago, clienteId, clienteNombre) => {
     const { cart } = get();
     if (cart.length === 0) return false;
 
@@ -155,53 +174,38 @@ export const usePosStore = create<PosStore>((set, get) => ({
       } = await supabase.auth.getUser();
       if (!user) throw new Error('No hay sesion activa');
 
-      const total = get().cartTotal();
+      const tasaBcv = useCurrencyStore.getState().bcvRate;
 
-      const { data: venta, error: ventaError } = await supabase
-        .from('ventas')
-        .insert({
-          workspace_id: workspaceId,
-          cajero_id: user.id,
-          cliente_nombre: clienteNombre || null,
-          subtotal: total,
-          impuesto: 0,
-          total,
-          metodo_pago: metodoPago,
-        })
-        .select('id, total, metodo_pago, created_at')
-        .single();
+      const { data: ventaRaw, error: checkoutError } = await supabase.rpc('process_checkout_tx', {
+        p_workspace_id: workspaceId,
+        p_cajero_id: user.id,
+        p_cliente_id: clienteId,
+        p_cliente_nombre: clienteNombre,
+        p_metodo_pago: metodoPago,
+        p_tasa_bcv: tasaBcv,
+        p_items: cart.map((item) => ({
+          codigo: item.codigo,
+          cantidad: item.quantity,
+        })),
+      });
 
-      if (ventaError) throw ventaError;
+      if (checkoutError) {
+        throw checkoutError;
+      }
 
-      const detalles = cart.map((item) => ({
-        venta_id: venta.id,
-        workspace_id: workspaceId,
-        producto_codigo: item.codigo,
-        producto_nombre: item.nombre,
-        precio_unitario: Number(item.precio_usd),
-        cantidad: item.quantity,
-        subtotal_linea: Number(item.precio_usd) * item.quantity,
-      }));
-
-      const { error: detallesError } = await supabase.from('venta_detalles').insert(detalles);
-      if (detallesError) throw detallesError;
-
-      for (const item of cart) {
-        const { error: stockError } = await supabase
-          .from('inventario')
-          .update({ stock: Math.max(0, (item.stock || 0) - item.quantity) })
-          .eq('codigo', item.codigo)
-          .eq('workspace_id', workspaceId);
-
-        if (stockError) console.error('Error actualizando stock:', stockError);
+      const venta = ventaRaw as CheckoutRpcResult | null;
+      if (!venta) {
+        throw new Error('No se recibio respuesta del checkout transaccional.');
       }
 
       set({
         lastVenta: {
           id: venta.id,
-          total: venta.total,
+          total: Number(venta.total),
+          total_bs: Number(venta.total_bs),
+          tasa_bcv: Number(venta.tasa_bcv),
           metodo_pago: venta.metodo_pago,
-          items_count: cart.reduce((a, b) => a + b.quantity, 0),
+          items_count: Number(venta.items_count),
           created_at: venta.created_at,
         },
         showSuccessModal: true,
@@ -211,8 +215,10 @@ export const usePosStore = create<PosStore>((set, get) => ({
 
       get().fetchInventory();
       return true;
-    } catch (error) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Error desconocido en checkout';
       console.error('Error en checkout:', error);
+      alert(`No se pudo completar la venta: ${message}`);
       set({ isCheckingOut: false });
       return false;
     }

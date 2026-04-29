@@ -4,9 +4,12 @@ import { useState, useEffect } from 'react';
 import { useInventoryStore } from '@/lib/inventoryStore';
 import { X, Save, Package } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { formatBs, usdToBs } from '@/lib/currency';
+import { useCurrencyStore } from '@/lib/currencyStore';
 
 export default function ProductFormModal() {
   const { editingProduct, isNewProduct, closeForm, saveProduct, isSaving } = useInventoryStore();
+  const { bcvRate } = useCurrencyStore();
 
   const [form, setForm] = useState({
     codigo: '',
@@ -227,6 +230,11 @@ export default function ProductFormModal() {
                 {form.costo_unitario && form.margen_detal && (
                   <p className="text-[10px] text-on-surface-variant mt-1 italic">
                     ↑ Calculado automáticamente: costo × (1 + margen%)
+                  </p>
+                )}
+                {form.precio_usd && parseFloat(form.precio_usd) > 0 && (
+                  <p className="text-[11px] text-primary mt-1 font-semibold">
+                    Equivale a {formatBs(usdToBs(parseFloat(form.precio_usd), bcvRate))} a tasa BCV actual
                   </p>
                 )}
               </div>

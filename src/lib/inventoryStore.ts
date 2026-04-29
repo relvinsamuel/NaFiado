@@ -19,6 +19,7 @@ interface InventoryStore {
   products: InventoryProduct[];
   isLoading: boolean;
   isSaving: boolean;
+  workspaceId: string | null;
   searchQuery: string;
   stockFilter: StockFilter;
   editingProduct: InventoryProduct | null;
@@ -32,6 +33,7 @@ interface InventoryStore {
   closeForm: () => void;
 
   fetchProducts: () => Promise<void>;
+  fetchWorkspaceId: () => Promise<string | null>;
   saveProduct: (product: Partial<InventoryProduct>) => Promise<boolean>;
   deleteProduct: (codigo: string, workspaceId: string) => Promise<boolean>;
   
@@ -45,6 +47,7 @@ export const useInventoryStore = create<InventoryStore>((set, get) => ({
   products: [],
   isLoading: false,
   isSaving: false,
+  workspaceId: null,
   searchQuery: '',
   stockFilter: 'all',
   editingProduct: null,
@@ -58,11 +61,49 @@ export const useInventoryStore = create<InventoryStore>((set, get) => ({
   openEditProduct: (product) => set({ isFormOpen: true, isNewProduct: false, editingProduct: product }),
   closeForm: () => set({ isFormOpen: false, editingProduct: null, isNewProduct: false }),
 
+  fetchWorkspaceId: async () => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      set({ workspaceId: null });
+      return null;
+    }
+
+    const { data, error } = await supabase
+      .from('workspace_members')
+      .select('workspace_id')
+      .eq('user_id', user.id)
+      .limit(1)
+      .single();
+
+    if (error || !data) {
+      console.error('Error fetching workspace_id:', error);
+      set({ workspaceId: null });
+      return null;
+    }
+
+    set({ workspaceId: data.workspace_id });
+    return data.workspace_id;
+  },
+
   fetchProducts: async () => {
     set({ isLoading: true });
+
+    let workspaceId = get().workspaceId;
+    if (!workspaceId) {
+      workspaceId = await get().fetchWorkspaceId();
+    }
+    if (!workspaceId) {
+      set({ products: [], isLoading: false });
+      return;
+    }
+
     const { data, error } = await supabase
       .from('inventario')
       .select('*')
+      .eq('workspace_id', workspaceId)
       .order('nombre', { ascending: true });
 
     if (error) {
@@ -77,10 +118,20 @@ export const useInventoryStore = create<InventoryStore>((set, get) => ({
     set({ isSaving: true });
     const isNew = get().isNewProduct;
 
+    let workspaceId = get().workspaceId;
+    if (!workspaceId) {
+      workspaceId = await get().fetchWorkspaceId();
+    }
+    if (!workspaceId) {
+      set({ isSaving: false });
+      alert('No se pudo resolver el workspace actual.');
+      return false;
+    }
+
     // Solo enviar columnas que existen en la tabla inventario
     const payload = {
       codigo: product.codigo,
-      workspace_id: product.workspace_id,
+      workspace_id: product.workspace_id || workspaceId,
       nombre: product.nombre,
       categoria: product.categoria || null,
       costo_unitario: product.costo_unitario ?? null,
@@ -106,7 +157,7 @@ export const useInventoryStore = create<InventoryStore>((set, get) => ({
         .from('inventario')
         .update(updates)
         .eq('codigo', codigo)
-        .eq('workspace_id', workspace_id);
+        .eq('workspace_id', workspace_id || workspaceId);
       if (error) {
         console.error('Error updating product:', JSON.stringify(error));
         alert(`Error al actualizar: ${error.message || 'Revisa la consola'}`);

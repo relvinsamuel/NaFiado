@@ -1,5 +1,5 @@
 'use client';
-import { Store, Users, FileText, Settings, BarChart3, Database } from 'lucide-react';
+import { Store, Users, FileText, Settings, BarChart3, Database, LayoutDashboard, ReceiptText } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -7,12 +7,14 @@ export default function Sidebar() {
   const pathname = usePathname();
 
   const menuItems = [
-    { name: 'Punto de Venta', icon: Store, path: '/' },
-    { name: 'Inventario', icon: Database, path: '/inventory' },
-    { name: 'Clientes', icon: Users, path: '/clients' },
-    { name: 'Facturas', icon: FileText, path: '/invoices' },
-    { name: 'Métricas', icon: BarChart3, path: '/metrics' },
-    { name: 'Configuración', icon: Settings, path: '/settings' },
+    { name: 'Dashboard', icon: LayoutDashboard, path: '/dashboard', enabled: true },
+    { name: 'Punto de Venta', icon: Store, path: '/', enabled: true },
+    { name: 'Inventario', icon: Database, path: '/inventory', enabled: true },
+    { name: 'Clientes', icon: Users, path: '/clients', enabled: true },
+    { name: 'Ventas', icon: ReceiptText, path: '/sales', enabled: true },
+    { name: 'Facturas', icon: FileText, path: '/invoices', enabled: false },
+    { name: 'Métricas', icon: BarChart3, path: '/metrics', enabled: false },
+    { name: 'Configuración', icon: Settings, path: '/settings', enabled: false },
   ];
 
   return (
@@ -30,7 +32,7 @@ export default function Sidebar() {
 
       {/* Menu Principal */}
       <div className="flex md:flex-col gap-2 w-full overflow-x-auto md:overflow-visible">
-        {menuItems.map((item) => {
+        {menuItems.filter((item) => item.enabled).map((item) => {
           const isActive = pathname === item.path;
           return (
             <Link
@@ -42,7 +44,7 @@ export default function Sidebar() {
                   ? 'bg-gradient-to-r from-primary to-primary-container text-on-primary shadow-ambient' 
                   : 'text-secondary hover:bg-surface-container hover:text-on-surface'}`}
             >
-              <item.icon size={22} className="shrink-0" />
+              <item.icon />
               <span className="font-medium whitespace-nowrap hidden group-hover:md:block text-sm">
                 {item.name}
               </span>

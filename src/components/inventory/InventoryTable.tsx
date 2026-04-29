@@ -3,6 +3,8 @@
 import { InventoryProduct, useInventoryStore } from '@/lib/inventoryStore';
 import { Edit3, Trash2, AlertTriangle, XCircle, ChevronUp, ChevronDown } from 'lucide-react';
 import { useState } from 'react';
+import { formatBs, formatUsd, usdToBs } from '@/lib/currency';
+import { useCurrencyStore } from '@/lib/currencyStore';
 
 type SortKey = 'nombre' | 'precio_usd' | 'stock' | 'categoria';
 type SortDir = 'asc' | 'desc';
@@ -11,6 +13,7 @@ const LOW_STOCK_THRESHOLD = 3;
 
 export default function InventoryTable({ products }: { products: InventoryProduct[] }) {
   const { openEditProduct, deleteProduct } = useInventoryStore();
+  const { bcvRate } = useCurrencyStore();
   const [sortKey, setSortKey] = useState<SortKey>('nombre');
   const [sortDir, setSortDir] = useState<SortDir>('asc');
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -135,15 +138,23 @@ export default function InventoryTable({ products }: { products: InventoryProduc
                     </span>
                   </td>
                   <td className="px-5 py-3.5 text-right font-mono text-on-surface-variant">
-                    {product.costo_unitario != null ? `$${Number(product.costo_unitario).toFixed(2)}` : '—'}
+                    {product.costo_unitario != null ? (
+                      <div>
+                        <span className="block">{formatBs(usdToBs(Number(product.costo_unitario), bcvRate))}</span>
+                        <span className="text-[11px]">{formatUsd(Number(product.costo_unitario))}</span>
+                      </div>
+                    ) : '—'}
                   </td>
                   <td className="px-5 py-3.5 text-right font-mono text-on-surface-variant">
                     {product.margen_detal != null ? `${Number(product.margen_detal).toFixed(0)}%` : '—'}
                   </td>
                   <td className="px-5 py-3.5 text-right">
-                    <span className="font-bold text-primary font-inter">
-                      ${Number(product.precio_usd ?? 0).toFixed(2)}
-                    </span>
+                    <div>
+                      <span className="font-bold text-primary font-inter block">
+                        {formatBs(usdToBs(Number(product.precio_usd ?? 0), bcvRate))}
+                      </span>
+                      <span className="text-[11px] text-on-surface-variant">{formatUsd(Number(product.precio_usd ?? 0))}</span>
+                    </div>
                   </td>
                   <td className="px-5 py-3.5 text-center">
                     {stockBadge(product.stock)}

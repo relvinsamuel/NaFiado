@@ -1,36 +1,80 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# NAFIADO POS SaaS
 
-## Getting Started
+Sistema web de punto de venta, inventario y clientes (fiado) construido con Next.js + Supabase + Zustand.
 
-First, run the development server:
+## Requisitos
+
+- Node.js 20+
+- Proyecto de Supabase configurado
+- Tablas base creadas con:
+  - `supabase_ventas.sql`
+  - `supabase_clientes.sql`
+
+## Variables de entorno
+
+Crea `.env.local` con:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+NEXT_PUBLIC_SUPABASE_URL=https://TU-PROYECTO.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=TU_ANON_KEY
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+La app ahora falla en arranque si estas variables no existen (fail-fast).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Instalacion y ejecucion
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm install
+npm run dev
+```
 
-## Learn More
+Abrir `http://localhost:3000`.
 
-To learn more about Next.js, take a look at the following resources:
+## Hardening aplicado
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Validacion temprana de variables de Supabase.
+- Checkout POS transaccional via RPC SQL para evitar carreras de stock.
+- Filtrado por `workspace_id` en consultas de clientes e inventario.
+- Sidebar solo muestra secciones implementadas para evitar 404.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Migracion SQL de hardening
 
-## Deploy on Vercel
+Ejecuta este archivo en Supabase SQL Editor:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- `supabase_hardening.sql`
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Este script crea la funcion `process_checkout_tx(...)` usada por el checkout atomico.
+
+## Como probar el hardening
+
+1. Arranque seguro de env:
+	- Quita temporalmente una variable en `.env.local`.
+	- Ejecuta `npm run dev`.
+	- Esperado: error inmediato indicando variables faltantes.
+
+2. Flujo base de login:
+	- Con variables correctas, ejecuta `npm run dev`.
+	- Esperado: login carga sin errores y redirige al POS al iniciar sesion.
+
+3. Aislamiento por workspace:
+	- Inicia sesion con usuario A (workspace A), revisa Inventario y Clientes.
+	- Inicia sesion con usuario B (workspace B), revisa las mismas vistas.
+	- Esperado: cada usuario solo ve sus datos.
+
+4. Checkout transaccional:
+	- Configura un producto con stock bajo (ejemplo 1).
+	- Intenta dos ventas simultaneas del mismo producto desde dos sesiones.
+	- Esperado: una venta se completa y la otra falla con mensaje de stock insuficiente, sin stock negativo.
+
+5. Integridad post-venta:
+	- Tras una venta exitosa, valida en Supabase:
+	  - `ventas` tiene 1 registro nuevo.
+	  - `venta_detalles` tiene lineas correctas.
+	  - `inventario.stock` se desconto correctamente.
+
+## Comandos utiles
+
+```bash
+npm run lint
+npm run build
+```

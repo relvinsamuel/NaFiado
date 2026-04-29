@@ -3,9 +3,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { usePosStore } from '@/lib/store';
 import { PackageOpen } from 'lucide-react';
+import { formatBs, formatUsd, usdToBs } from '@/lib/currency';
+import { useCurrencyStore } from '@/lib/currencyStore';
 
 export default function ProductGrid({ searchQuery }: { searchQuery: string }) {
   const { inventory, isLoading, fetchInventory, addToCart } = usePosStore();
+  const { bcvRate } = useCurrencyStore();
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
   useEffect(() => {
@@ -82,7 +85,10 @@ export default function ProductGrid({ searchQuery }: { searchQuery: string }) {
             <div className="p-4">
               <h3 className="font-bold text-sm text-on-surface mb-1 line-clamp-2 h-10 font-manrope">{product.nombre}</h3>
               <div className="flex items-center justify-between mt-3">
-                <p className="text-primary font-bold font-inter">${Number(product.precio_usd).toFixed(2)}</p>
+                <div>
+                  <p className="text-primary font-bold font-inter">{formatBs(usdToBs(Number(product.precio_usd), bcvRate))}</p>
+                  <p className="text-[11px] text-on-surface-variant font-medium">{formatUsd(Number(product.precio_usd))}</p>
+                </div>
                 <span className="text-[10px] text-on-secondary-container bg-secondary-container px-2 py-0.5 rounded-full font-semibold">Stock: {product.stock || 0}</span>
               </div>
             </div>
