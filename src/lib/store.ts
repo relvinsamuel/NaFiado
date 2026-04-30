@@ -17,6 +17,7 @@ export interface CartItem extends Product {
 
 export interface VentaResult {
   id: string;
+  sesion_caja_id?: string;
   total: number;
   total_bs: number;
   tasa_bcv: number;
@@ -27,6 +28,7 @@ export interface VentaResult {
 
 interface CheckoutRpcResult {
   id: string;
+  sesion_caja_id?: string;
   total: number;
   total_bs: number;
   tasa_bcv: number;
@@ -182,6 +184,7 @@ export const usePosStore = create<PosStore>((set, get) => ({
         p_cliente_id: clienteId,
         p_cliente_nombre: clienteNombre,
         p_metodo_pago: metodoPago,
+        p_referencia_transferencia: '',
         p_tasa_bcv: tasaBcv,
         p_items: cart.map((item) => ({
           codigo: item.codigo,
@@ -201,6 +204,7 @@ export const usePosStore = create<PosStore>((set, get) => ({
       set({
         lastVenta: {
           id: venta.id,
+          sesion_caja_id: venta.sesion_caja_id,
           total: Number(venta.total),
           total_bs: Number(venta.total_bs),
           tasa_bcv: Number(venta.tasa_bcv),

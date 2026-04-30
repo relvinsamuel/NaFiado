@@ -14,7 +14,7 @@ type VentaRow = {
   created_at: string | null;
   cajero_id?: string | null;
   referencia_transferencia?: string | null;
-  venta_detalles?: Array<{
+  detalles_venta?: Array<{
     producto_codigo?: string | null;
     producto_nombre?: string | null;
     cantidad?: number | null;
@@ -68,7 +68,7 @@ function toSaleRecord(row: VentaRow): SaleRecord | null {
     return null;
   }
 
-  const details = Array.isArray(row.venta_detalles) ? row.venta_detalles : [];
+  const details = Array.isArray(row.detalles_venta) ? row.detalles_venta : [];
 
   return {
     id: row.id,
@@ -144,7 +144,7 @@ export default function SalesPage() {
 
       const salesResponse = await supabase
         .from('ventas')
-        .select('id, cliente_nombre, metodo_pago, total, created_at, cajero_id, referencia_transferencia, venta_detalles(producto_codigo, producto_nombre, cantidad)')
+        .select('id, cliente_nombre, metodo_pago, total, created_at, cajero_id, referencia_transferencia, detalles_venta(producto_codigo, producto_nombre, cantidad)')
         .eq('workspace_id', workspaceResponse.data.workspace_id)
         .order('created_at', { ascending: false })
         .limit(150);
