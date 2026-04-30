@@ -1,43 +1,35 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 
-export default function AuthGuard({ children }: { children: React.ReactNode }) {
-  const [isLoading, setIsLoading] = useState(true);
+type AuthGuardProps = {
+  children: React.ReactNode;
+  initialUserId: string | null;
+};
+
+export default function AuthGuard({ children, initialUserId }: AuthGuardProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const isLoginPage = pathname === '/login';
+  const isAuthenticated = Boolean(initialUserId);
 
   useEffect(() => {
-    const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session && pathname !== '/login') {
-        router.push('/login');
-      } else if (session && pathname === '/login') {
-        router.push('/');
-      }
-      setIsLoading(false);
-    };
-
-    checkUser();
-
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session && pathname !== '/login') {
-        router.push('/login');
-      } else if (session && pathname === '/login') {
-        router.push('/');
+      if (!session && !isLoginPage) {
+        router.replace('/login');
+      } else if (session && isLoginPage) {
+        router.replace('/');
       }
     });
 
     return () => {
       subscription.unsubscribe();
     };
-  }, [pathname, router]);
+  }, [isLoginPage, router]);
 
-  // Si está cargando y no estamos en login (que no requiere data de usuario inmediata), mostrar loader
-  if (isLoading) {
+  if (!isAuthenticated && !isLoginPage) {
     return (
       <div className="min-h-screen bg-surface flex flex-col items-center justify-center">
         <div className="w-8 h-8 border-4 border-surface-container-highest border-t-primary rounded-full animate-spin"></div>
@@ -45,7 +37,5 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // En la página de login, no queremos renderizar el Sidebar (Children normal en layout). 
-  // Por el momento devolveremos los children directos.
   return <>{children}</>;
 }

@@ -1,7 +1,8 @@
 'use client';
-import { Store, Users, FileText, Settings, BarChart3, Database, LayoutDashboard, ReceiptText } from 'lucide-react';
+import { Store, Users, FileText, Settings, BarChart3, Database, LayoutDashboard, ReceiptText, LogOut } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { logoutAction } from '@/app/actions/auth';
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -22,7 +23,7 @@ export default function Sidebar() {
       {/* Logo */}
       <div className="flex items-center gap-3 md:mb-12 w-full md:justify-center group-hover:md:justify-start group-hover:md:px-2 transition-all">
         <h1 className="text-3xl font-manrope font-extrabold text-[#1a3b2b] m-0 tracking-tight flex items-baseline md:hidden group-hover:md:flex">
-          Naf<span className="text-primary relative inline-block">i<span className="absolute -top-1 -right-2 text-[16px] font-black">↗</span></span>ado
+          Naf<span className="text-primary relative inline-block">i<span className="absolute -top-1 -right-2 text-[16px] font-black">↗</span></span>ao
         </h1>
         {/* Ícono colapsado */}
         <h1 className="text-3xl font-manrope font-extrabold text-[#1a3b2b] m-0 tracking-tight flex items-baseline hidden md:flex group-hover:md:hidden">
@@ -51,6 +52,15 @@ export default function Sidebar() {
             </Link>
           );
         })}
+        <form action={logoutAction} className="md:hidden shrink-0">
+          <button
+            type="submit"
+            title="Cerrar sesión"
+            className="rounded-md p-3 flex items-center gap-4 text-secondary hover:bg-surface-container hover:text-on-surface transition-colors"
+          >
+            <LogOut />
+          </button>
+        </form>
       </div>
       
       {/* Footer del nav */}
@@ -66,6 +76,17 @@ export default function Sidebar() {
              <p className="text-xs text-on-surface-variant whitespace-nowrap font-inter">H2O Pinor</p>
            </div>
          </div>
+         <form action={logoutAction}>
+           <button
+             type="submit"
+             className="w-full rounded-md p-3 flex items-center gap-4 text-secondary hover:bg-surface-container hover:text-on-surface transition-colors"
+           >
+             <LogOut size={18} />
+             <span className="font-medium whitespace-nowrap hidden group-hover:md:block text-sm">
+               Cerrar sesión
+             </span>
+           </button>
+         </form>
       </div>
     </nav>
   );
