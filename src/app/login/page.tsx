@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Loader2, Lock, Mail } from 'lucide-react';
@@ -125,6 +126,14 @@ export default function LoginPage() {
                 />
               </div>
               {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>}
+              <div className="mt-3 text-right">
+                <Link
+                  href="/recuperar-contrasena"
+                  className="text-sm font-medium text-[#c2410c] transition-colors hover:text-[#a3360a]"
+                >
+                  Olvide mi contraseña
+                </Link>
+              </div>
             </div>
 
             <button
@@ -134,6 +143,16 @@ export default function LoginPage() {
             >
               {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Acceder al POS'}
             </button>
+
+            <div className="pt-2 text-center">
+              <p className="text-sm text-slate-600">¿No tienes cuenta?</p>
+              <Link
+                href="/registro"
+                className="mt-3 inline-flex items-center justify-center rounded-md border border-[#c2410c] px-5 py-2.5 text-sm font-bold text-[#c2410c] transition-colors hover:bg-[#c2410c] hover:text-white"
+              >
+                Registrate
+              </Link>
+            </div>
           </form>
         </div>
       </section>

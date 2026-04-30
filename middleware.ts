@@ -1,6 +1,13 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
+const PUBLIC_ROUTES = new Set([
+  '/login',
+  '/registro',
+  '/auth/callback',
+  '/recuperar-contrasena',
+]);
+
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request });
 
@@ -25,8 +32,6 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  // Usamos getUser() en lugar de getSession() porque valida la sesión
-  // contra el servidor de Supabase y no se limita a leer la cookie local.
   const {
     data: { user },
     error,
@@ -34,8 +39,9 @@ export async function middleware(request: NextRequest) {
 
   const isAuthenticated = !error && !!user;
   const { pathname } = request.nextUrl;
-  const isLoginRoute = pathname === '/login';
-  const isProtectedRoute = pathname !== '/login';
+  const isPublicRoute = PUBLIC_ROUTES.has(pathname);
+  const isProtectedRoute = !isPublicRoute;
+  const isAuthPage = pathname === '/login' || pathname === '/registro';
 
   if (isProtectedRoute && !isAuthenticated) {
     const url = request.nextUrl.clone();
@@ -43,7 +49,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (isLoginRoute && isAuthenticated) {
+  if (isAuthenticated && isAuthPage) {
     const url = request.nextUrl.clone();
     url.pathname = '/';
     return NextResponse.redirect(url);

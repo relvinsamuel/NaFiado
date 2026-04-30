@@ -11,9 +11,9 @@ type AppLayoutProps = {
 
 export default function AppLayout({ children, initialUserId }: AppLayoutProps) {
   const pathname = usePathname();
-  const isLoginPage = pathname === '/login';
+  const isAuthPage = pathname === '/login' || pathname === '/registro' || pathname === '/recuperar-contrasena';
 
-  if (isLoginPage) {
+  if (isAuthPage) {
     return (
       <AuthGuard initialUserId={initialUserId}>
         <div className="w-full h-full bg-surface-container-low text-on-surface overflow-auto">
