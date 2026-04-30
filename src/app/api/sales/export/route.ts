@@ -100,7 +100,9 @@ export async function POST(request: NextRequest) {
 
   if (body.format === 'pdf') {
     const pdfBytes = await buildPdf(rows, periodLabel);
-    return new Response(pdfBytes, {
+    const pdfBody = Uint8Array.from(pdfBytes);
+
+    return new Response(pdfBody, {
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': 'attachment; filename="ventas.pdf"',
