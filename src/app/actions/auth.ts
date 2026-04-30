@@ -19,7 +19,8 @@ export async function loginAction(formData: FormData): Promise<AuthActionState> 
   });
 
   if (error) {
-    return { error: 'Credenciales incorrectas. Verifica tu correo y contraseña.' };
+    console.error('ERROR REAL DE SUPABASE:', error.message);
+    return { error: error.message };
   }
 
   return { success: true };
