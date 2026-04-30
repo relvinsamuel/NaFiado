@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Loader2, Lock, Mail } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { loginAction } from '@/app/actions/auth';
 
 type LoginFormValues = {
@@ -11,6 +12,7 @@ type LoginFormValues = {
 };
 
 export default function LoginPage() {
+  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -33,7 +35,10 @@ export default function LoginPage() {
       if (result?.error) {
         setServerError(result.error);
         setIsLoading(false);
+        return;
       }
+
+      router.replace('/');
     } catch {
       setServerError('No se pudo iniciar sesión. Intenta nuevamente.');
       setIsLoading(false);

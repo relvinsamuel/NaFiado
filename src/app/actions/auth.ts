@@ -5,9 +5,10 @@ import { createClient } from '@/utils/supabase/server';
 
 export type AuthActionState = {
   error?: string;
+  success?: boolean;
 };
 
-export async function loginAction(formData: FormData): Promise<AuthActionState | void> {
+export async function loginAction(formData: FormData): Promise<AuthActionState> {
   const email = String(formData.get('email') ?? '');
   const password = String(formData.get('password') ?? '');
   const supabase = await createClient();
@@ -21,10 +22,10 @@ export async function loginAction(formData: FormData): Promise<AuthActionState |
     return { error: 'Credenciales incorrectas. Verifica tu correo y contraseña.' };
   }
 
-  redirect('/');
+  return { success: true };
 }
 
-export async function signupAction(formData: FormData): Promise<AuthActionState | void> {
+export async function signupAction(formData: FormData): Promise<AuthActionState> {
   const email = String(formData.get('email') ?? '');
   const password = String(formData.get('password') ?? '');
   const supabase = await createClient();
@@ -38,7 +39,7 @@ export async function signupAction(formData: FormData): Promise<AuthActionState 
     return { error: error.message };
   }
 
-  redirect('/');
+  return { success: true };
 }
 
 export async function logoutAction() {

@@ -34,10 +34,10 @@ export async function middleware(request: NextRequest) {
 
   const isAuthenticated = !error && !!user;
   const { pathname } = request.nextUrl;
-  const isPosRoute = pathname.startsWith('/pos');
   const isLoginRoute = pathname === '/login';
+  const isProtectedRoute = pathname !== '/login';
 
-  if (isPosRoute && !isAuthenticated) {
+  if (isProtectedRoute && !isAuthenticated) {
     const url = request.nextUrl.clone();
     url.pathname = '/login';
     return NextResponse.redirect(url);
@@ -45,7 +45,7 @@ export async function middleware(request: NextRequest) {
 
   if (isLoginRoute && isAuthenticated) {
     const url = request.nextUrl.clone();
-    url.pathname = '/pos';
+    url.pathname = '/';
     return NextResponse.redirect(url);
   }
 
