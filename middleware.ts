@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
 const PUBLIC_ROUTES = new Set([
+  '/',
   '/login',
   '/registro',
   '/auth/callback',
@@ -51,7 +52,7 @@ export async function middleware(request: NextRequest) {
 
   if (isAuthenticated && isAuthPage) {
     const url = request.nextUrl.clone();
-    url.pathname = '/';
+    url.pathname = '/dashboard';
     return NextResponse.redirect(url);
   }
 
