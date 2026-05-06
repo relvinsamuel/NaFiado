@@ -117,10 +117,15 @@ export const useClientStore = create<ClientStore>((set, get) => ({
       .select('workspace_id')
       .eq('user_id', user.id)
       .limit(1)
-      .single();
+      .maybeSingle();
 
-    if (error || !data) {
-      console.error('Error fetching workspace_id:', error);
+    if (error) {
+      console.error('Error fetching workspace_id:', JSON.stringify(error, null, 2));
+      set({ workspaceId: null });
+      return null;
+    }
+
+    if (!data) {
       set({ workspaceId: null });
       return null;
     }

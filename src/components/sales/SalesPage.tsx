@@ -132,7 +132,11 @@ export default function SalesPage() {
         .select('workspace_id')
         .eq('user_id', user.id)
         .limit(1)
-        .single();
+        .maybeSingle();
+
+      if (workspaceResponse.error) {
+        console.error('Error fetching workspace_id:', JSON.stringify(workspaceResponse.error, null, 2));
+      }
 
       if (workspaceResponse.error || !workspaceResponse.data?.workspace_id) {
         if (active) {

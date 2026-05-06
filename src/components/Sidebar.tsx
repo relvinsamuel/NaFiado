@@ -9,7 +9,7 @@ export default function Sidebar() {
 
   const menuItems = [
     { name: 'Dashboard', icon: LayoutDashboard, path: '/dashboard', enabled: true },
-    { name: 'Punto de Venta', icon: Store, path: '/', enabled: true },
+    { name: 'Punto de Venta', icon: Store, path: '/pos', enabled: true },
     { name: 'Inventario', icon: Database, path: '/inventory', enabled: true },
     { name: 'Clientes', icon: Users, path: '/clients', enabled: true },
     { name: 'Ventas', icon: ReceiptText, path: '/sales', enabled: true },

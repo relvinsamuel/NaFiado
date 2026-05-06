@@ -243,7 +243,7 @@ export default function DashboardPage() {
         <div className="flex flex-wrap items-center gap-3 justify-between">
           <div className="flex flex-wrap items-center gap-2 md:gap-3">
             <Link
-              href="/"
+              href="/pos"
               className="inline-flex items-center gap-2 bg-gradient-to-r from-primary to-primary-container text-on-primary font-bold rounded-md px-4 py-2.5 text-sm hover:shadow-lg transition-all"
             >
               <Plus size={16} /> Nueva Venta (POS)

@@ -1,84 +1,155 @@
 @import "tailwindcss";
 
 :root {
-  /* Industrial Precision - Core Colors */
-  --color-primary: #a23a00;
-  --color-primary-container: #ca4b00;
-  --color-on-primary: #ffffff;
-  
-  --color-secondary: #45655a;
-  --color-secondary-container: #e6eee9;
-  --color-on-secondary-container: #1e3029;
-  
-  /* Industrial Greys - Surfaces */
-  --color-surface: #f9f9f9;
-  --color-surface-container-lowest: #ffffff;
-  --color-surface-container-low: #f4f3f3;
-  --color-surface-container: #ececec;
-  --color-surface-container-high: #e2e2e2;
-  --color-surface-container-highest: #d5d5d5;
-  
-  --color-surface-bright: rgba(255, 255, 255, 0.8);
-  
-  /* Text & Borders */
-  --color-on-surface: #1a1c1c;
-  --color-on-surface-variant: #5b6260;
-  --color-outline: #757c7a;
-  --color-outline-variant: #c3cac7;
+  /* Dynamic fonts from next/font */
+  --font-inter: 'Inter', system-ui, sans-serif;
+  --font-manrope: 'Manrope', system-ui, sans-serif;
 }
 
 @theme inline {
-  --color-primary: var(--color-primary);
-  --color-primary-container: var(--color-primary-container);
-  --color-on-primary: var(--color-on-primary);
-  
-  --color-secondary: var(--color-secondary);
-  --color-secondary-container: var(--color-secondary-container);
-  --color-on-secondary-container: var(--color-on-secondary-container);
-  
-  --color-surface: var(--color-surface);
-  --color-surface-container-lowest: var(--color-surface-container-lowest);
-  --color-surface-container-low: var(--color-surface-container-low);
-  --color-surface-container: var(--color-surface-container);
-  --color-surface-container-high: var(--color-surface-container-high);
-  --color-surface-container-highest: var(--color-surface-container-highest);
-  --color-surface-bright: var(--color-surface-bright);
-  
-  --color-on-surface: var(--color-on-surface);
-  --color-on-surface-variant: var(--color-on-surface-variant);
-  --color-outline: var(--color-outline);
-  --color-outline-variant: var(--color-outline-variant);
+  /* New Colors from code.html */
+  --color-on-surface: #271813;
+  --color-on-background: #271813;
+  --color-background: #fff8f6;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #fff1ec;
+  --color-surface-dim: #f0d4cc;
+  --color-surface-tint: #a83800;
+  --color-primary: #a43700;
+  --color-primary-container: #ce4700;
+  --color-on-primary: #ffffff;
+  --color-on-surface-variant: #5a4138;
+  --color-surface-container-highest: #f8ddd4;
+  --color-surface-container-high: #fee2da;
+  --color-surface-variant: #f8ddd4;
+  --color-outline-variant: #e3bfb2;
+  --color-secondary: #9a4523;
 
-  --font-manrope: var(--font-manrope), system-ui, sans-serif;
-  --font-inter: var(--font-inter), system-ui, sans-serif;
-  
+  /* Legacy Brand Colors (Optional fallback) */
+  --color-brand-bg: #F7F5F0;
+  --color-brand-text: #19382F;
+  --color-brand-accent: #F25C05;
+  --color-brand-accentHover: #D95204;
+  --color-brand-success: #4CAF50;
+  --color-brand-error: #D32F2F;
+  --color-brand-errorBg: rgba(229, 115, 115, 0.1);
+
+  /* Spacing */
+  --spacing-margin-xl: 4rem;
+  --spacing-gap-sm: 1rem;
+  --spacing-gap-xs: 0.5rem;
+  --spacing-gap-md: 1.5rem;
+  --spacing-gap-lg: 2rem;
+  --spacing-gutter: 1.5rem;
+
+  /* Fonts */
+  --font-title-md: var(--font-inter);
+  --font-display-sm: var(--font-manrope);
+  --font-body-md: var(--font-inter);
+  --font-label-md: var(--font-inter);
+  --font-label-sm: var(--font-inter);
+  --font-display-lg: var(--font-manrope);
+
+  /* Radius */
   --radius-sm: 4px;
   --radius-md: 6px;
   --radius-lg: 12px;
-  
-  /* Ambient shadow for cards */
-  --shadow-ambient: 0 4px 30px rgba(26, 28, 28, 0.05);
+}
+
+/* Custom Text Utilities from code.html */
+@utility text-title-md {
+  font-size: 1.125rem;
+  line-height: 1.5;
+  font-weight: 600;
+}
+@utility text-display-sm {
+  font-size: 2.25rem;
+  line-height: 1.2;
+  font-weight: 700;
+}
+@utility text-body-md {
+  font-size: 1rem;
+  line-height: 1.6;
+  font-weight: 400;
+}
+@utility text-label-md {
+  font-size: 0.75rem;
+  line-height: 1;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+}
+@utility text-label-sm {
+  font-size: 0.75rem;
+  line-height: 1;
+  font-weight: 400;
+}
+@utility text-display-lg {
+  font-size: 3.5rem;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  font-weight: 800;
 }
 
 body {
-  background-color: var(--color-surface);
-  color: var(--color-on-surface);
-  font-family: var(--font-inter);
+  background-color: var(--color-background);
+  color: var(--color-on-background);
+  font-family: var(--font-body-md);
   -webkit-font-smoothing: antialiased;
 }
 
 /* Custom Scrollbar for POS */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--color-surface-container-high);
+  background: var(--color-outline-variant);
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-outline);
+  background: var(--color-on-surface-variant);
+}
+
+/* Animaciones Scroll (Apple Style) */
+.reveal-on-scroll {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 1s cubic-bezier(0.16, 1, 0.3, 1), transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.reveal-on-scroll.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.delay-100 {
+  transition-delay: 100ms;
+}
+
+.delay-200 {
+  transition-delay: 200ms;
+}
+
+.delay-300 {
+  transition-delay: 300ms;
+}
+
+@keyframes slideDown {
+  from {
+      transform: translateY(-100%);
+      opacity: 0;
+  }
+
+  to {
+      transform: translateY(0);
+      opacity: 1;
+  }
+}
+
+.animate-slide-down {
+  animation: slideDown 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }

@@ -50,7 +50,7 @@ export default function ProductFormModal() {
           .select('workspace_id')
           .eq('user_id', userId)
           .limit(1)
-          .single();
+          .maybeSingle();
 
         if (data?.workspace_id) {
           setForm((f) => ({ ...f, workspace_id: data.workspace_id }));
