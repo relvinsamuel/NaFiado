@@ -97,7 +97,7 @@ export async function signupTenantAction(
     };
   }
 
-  redirect('/');
+  redirect('/dashboard');
 }
 
 export async function registerTenantAdminAction(

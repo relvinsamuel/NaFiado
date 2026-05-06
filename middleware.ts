@@ -42,7 +42,7 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isPublicRoute = PUBLIC_ROUTES.has(pathname);
   const isProtectedRoute = !isPublicRoute;
-  const isAuthPage = pathname === '/login' || pathname === '/registro';
+  const isAuthPageOrRoot = pathname === '/login' || pathname === '/registro' || pathname === '/';
 
   if (isProtectedRoute && !isAuthenticated) {
     const url = request.nextUrl.clone();
@@ -50,7 +50,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (isAuthenticated && isAuthPage) {
+  if (isAuthenticated && isAuthPageOrRoot) {
     const url = request.nextUrl.clone();
     url.pathname = '/dashboard';
     return NextResponse.redirect(url);

@@ -39,7 +39,7 @@ export default function LoginPage() {
         return;
       }
 
-      router.replace('/');
+      router.replace('/dashboard');
     } catch {
       setServerError('No se pudo iniciar sesión. Intenta nuevamente.');
       setIsLoading(false);
