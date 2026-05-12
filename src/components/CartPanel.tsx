@@ -17,7 +17,7 @@ const METODOS_PAGO = [
 ];
 
 export default function CartPanel() {
-  const { cart, removeFromCart, updateQuantity, clearCart, cartTotal, processCheckout, isCheckingOut } = usePosStore();
+  const { cart, removeFromCart, updateQuantity, clearCart, cartTotal, processCheckout, isCheckingOut, cashSession } = usePosStore();
   const { clients, fetchClients } = useClientStore();
   const { bcvRate } = useCurrencyStore();
   const total = cartTotal();
@@ -107,6 +107,7 @@ export default function CartPanel() {
     }
   };
 
+  const isSessionOpen = cashSession?.estado === 'abierta';
   const metodoActual = METODOS_PAGO.find(m => m.id === metodoPago)!;
 
   return (
@@ -328,7 +329,7 @@ export default function CartPanel() {
 
         <button 
           onClick={handleCheckout}
-          disabled={cart.length === 0 || isCheckingOut}
+          disabled={cart.length === 0 || isCheckingOut || !isSessionOpen}
           className="w-full bg-gradient-to-r from-primary to-primary-container hover:from-primary-container hover:to-primary text-on-primary font-bold rounded-md py-4 px-4 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg focus:outline-none focus:ring-2 transform active:scale-[0.98]"
         >
           {isCheckingOut ? (
@@ -339,7 +340,7 @@ export default function CartPanel() {
           ) : (
             <>
               <CreditCard size={20} />
-              {metodoPago === 'fiado' ? `Registrar deuda ${formatUsd(total)}` : `Cobrar ${formatBs(totalBs)}`}
+              {!isSessionOpen ? 'Caja Cerrada' : metodoPago === 'fiado' ? `Registrar deuda ${formatUsd(total)}` : `Cobrar ${formatBs(totalBs)}`}
             </>
           )}
         </button>

@@ -26,6 +26,16 @@ export interface VentaResult {
   created_at: string;
 }
 
+export interface CashSession {
+  id: string;
+  estado: 'abierta' | 'cerrada';
+  monto_inicial: number;
+  total_efectivo: number;
+  total_ventas: number;
+  diferencia_cierre?: number | null;
+  fecha_apertura: string;
+}
+
 interface CheckoutRpcResult {
   id: string;
   sesion_caja_id?: string;
@@ -45,6 +55,8 @@ interface PosStore {
   lastVenta: VentaResult | null;
   showSuccessModal: boolean;
   workspaceId: string | null;
+  cashSession: CashSession | null;
+  isCashSessionLoading: boolean;
 
   addToCart: (product: Product) => void;
   removeFromCart: (codigo: string) => void;
@@ -55,6 +67,10 @@ interface PosStore {
   fetchWorkspaceId: () => Promise<string | null>;
   processCheckout: (metodoPago: string, clienteId: string, clienteNombre: string) => Promise<boolean>;
   closeSuccessModal: () => void;
+
+  fetchCurrentSession: () => Promise<void>;
+  openCashSession: (montoInicial: number) => Promise<boolean>;
+  closeCashSession: (montoDeclarado: number) => Promise<boolean>;
 }
 
 export const usePosStore = create<PosStore>((set, get) => ({
@@ -65,6 +81,8 @@ export const usePosStore = create<PosStore>((set, get) => ({
   lastVenta: null,
   showSuccessModal: false,
   workspaceId: null,
+  cashSession: null,
+  isCashSessionLoading: false,
 
   addToCart: (product) =>
     set((state) => {
@@ -234,4 +252,104 @@ export const usePosStore = create<PosStore>((set, get) => ({
   },
 
   closeSuccessModal: () => set({ showSuccessModal: false, lastVenta: null }),
+
+  fetchCurrentSession: async () => {
+    set({ isCashSessionLoading: true });
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        set({ isCashSessionLoading: false });
+        return;
+      }
+
+      let workspaceId = get().workspaceId;
+      if (!workspaceId) {
+        workspaceId = await get().fetchWorkspaceId();
+      }
+      if (!workspaceId) {
+        set({ isCashSessionLoading: false });
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('sesiones_caja')
+        .select('*')
+        .eq('tenant_id', workspaceId)
+        .eq('usuario_id', user.id)
+        .eq('estado', 'abierta')
+        .order('fecha_apertura', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (error) throw error;
+      set({ cashSession: data || null, isCashSessionLoading: false });
+    } catch (err) {
+      console.error('Error fetching cash session:', err);
+      set({ cashSession: null, isCashSessionLoading: false });
+    }
+  },
+
+  openCashSession: async (montoInicial: number) => {
+    set({ isCashSessionLoading: true });
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Usuario no autenticado');
+
+      let workspaceId = get().workspaceId;
+      if (!workspaceId) {
+        workspaceId = await get().fetchWorkspaceId();
+      }
+      if (!workspaceId) throw new Error('No se encontró el workspace del cajero. Por favor, verifica que tu usuario tenga un workspace asignado.');
+
+      const { data, error } = await supabase.rpc('open_cash_session', {
+        p_workspace_id: workspaceId,
+        p_cajero_id: user.id,
+        p_monto_apertura: montoInicial
+      });
+
+      if (error) throw error;
+      
+      set({ cashSession: data, isCashSessionLoading: false });
+      return true;
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Error al abrir caja';
+      alert(`No se pudo abrir la caja: ${message}`);
+      set({ isCashSessionLoading: false });
+      return false;
+    }
+  },
+
+  closeCashSession: async (montoDeclarado: number) => {
+    set({ isCashSessionLoading: true });
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Usuario no autenticado');
+
+      let workspaceId = get().workspaceId;
+      if (!workspaceId) {
+        workspaceId = await get().fetchWorkspaceId();
+      }
+      if (!workspaceId) throw new Error('No se encontró el workspace del cajero.');
+
+      const currentSession = get().cashSession;
+      if (!currentSession) throw new Error('No hay caja abierta');
+
+      const { data, error } = await supabase.rpc('close_cash_session', {
+        p_workspace_id: workspaceId,
+        p_sesion_caja_id: currentSession.id,
+        p_cajero_id: user.id,
+        p_monto_declarado_cierre: montoDeclarado
+      });
+
+      if (error) throw error;
+      
+      set({ cashSession: null, isCashSessionLoading: false });
+      return true;
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Error al cerrar caja';
+      alert(`No se pudo cerrar la caja: ${message}`);
+      set({ isCashSessionLoading: false });
+      return false;
+    }
+  },
 }));
